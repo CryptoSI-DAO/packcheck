@@ -89,7 +89,7 @@ export async function analyzeProperty(text: string): Promise<AnalysisResult> {
       "X-Title": "PackCheck",
     },
     body: JSON.stringify({
-      model: "google/gemini-2.5-flash",
+      model: "google/gemini-2.5-flash-lite",
       max_tokens: 4000,
       messages: [
         {
