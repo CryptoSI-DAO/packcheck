@@ -89,7 +89,7 @@ export async function analyzeProperty(text: string): Promise<AnalysisResult> {
       "X-Title": "PackCheck",
     },
     body: JSON.stringify({
-      model: "nvidia/nemotron-3-super-120b-a12b:free",
+      model: "google/gemini-2.5-flash",
       max_tokens: 4000,
       messages: [
         {
