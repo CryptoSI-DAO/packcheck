@@ -1,11 +1,17 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient, SupabaseClient } from "@supabase/supabase-js";
 
-// Use untyped client to avoid Supabase generic type inference issues
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  { auth: { persistSession: false } }
-);
+// Lazy-init: avoid crashing Vercel build when env vars aren't present at static analysis time
+let _admin: SupabaseClient | null = null;
+function getAdmin(): SupabaseClient {
+  if (!_admin) {
+    _admin = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      { auth: { persistSession: false } }
+    );
+  }
+  return _admin;
+}
 
 export type CreditCheckResult = {
   hasCredit: boolean;
@@ -18,7 +24,7 @@ export async function checkCredits(userId: string): Promise<CreditCheckResult> {
   const currentMonth = now.getMonth() + 1;
   const currentYear = now.getFullYear();
 
-  const { data: profile, error } = await supabaseAdmin
+  const { data: profile, error } = await getAdmin()
     .from("evaluator_profiles")
     .select("*")
     .eq("user_id", userId)
@@ -37,7 +43,7 @@ export async function checkCredits(userId: string): Promise<CreditCheckResult> {
 
   if (needsReset && profile.free_credit_used_this_month) {
     // Reset free credit
-    await supabaseAdmin
+    await getAdmin()
       .from("evaluator_profiles")
       .update({
         free_credit_used_this_month: false,
@@ -66,7 +72,7 @@ export async function deductCredit(userId: string): Promise<void> {
   const currentMonth = now.getMonth() + 1;
   const currentYear = now.getFullYear();
 
-  const { data: profile } = await supabaseAdmin
+  const { data: profile } = await getAdmin()
     .from("evaluator_profiles")
     .select("*")
     .eq("user_id", userId)
@@ -85,7 +91,7 @@ export async function deductCredit(userId: string): Promise<void> {
 
   if (!usedThisMonth) {
     // Use free credit
-    await supabaseAdmin
+    await getAdmin()
       .from("evaluator_profiles")
       .update({
         free_credit_used_this_month: true,
@@ -96,7 +102,7 @@ export async function deductCredit(userId: string): Promise<void> {
       .eq("user_id", userId);
   } else {
     // Deduct a paid credit
-    await supabaseAdmin
+    await getAdmin()
       .from("evaluator_profiles")
       .update({
         credits: Math.max(0, profile.credits - 1),
@@ -108,7 +114,7 @@ export async function deductCredit(userId: string): Promise<void> {
 
 /** Add credits after Stripe payment */
 export async function addCredits(userId: string, amount: number): Promise<void> {
-  const { data: profile } = await supabaseAdmin
+  const { data: profile } = await getAdmin()
     .from("evaluator_profiles")
     .select("credits")
     .eq("user_id", userId)
@@ -116,7 +122,7 @@ export async function addCredits(userId: string, amount: number): Promise<void> 
 
   const newTotal = (profile?.credits ?? 0) + amount;
 
-  await supabaseAdmin
+  await getAdmin()
     .from("evaluator_profiles")
     .update({ credits: newTotal, updated_at: new Date().toISOString() })
     .eq("user_id", userId);
@@ -133,7 +139,7 @@ export async function saveReport(
     fileCount: number;
   }
 ): Promise<string | null> {
-  const { data: report, error } = await supabaseAdmin
+  const { data: report, error } = await getAdmin()
     .from("evaluator_reports")
     .insert({
       user_id: userId,
@@ -149,7 +155,7 @@ export async function saveReport(
   if (error || !report) return null;
 
   // Trim to last 5: count reports and delete oldest beyond 5
-  const { data: allReports } = await supabaseAdmin
+  const { data: allReports } = await getAdmin()
     .from("evaluator_reports")
     .select("id")
     .eq("user_id", userId)
@@ -157,7 +163,7 @@ export async function saveReport(
 
   if (allReports && allReports.length > 5) {
     const toDelete = allReports.slice(5).map((r) => r.id);
-    await supabaseAdmin
+    await getAdmin()
       .from("evaluator_reports")
       .delete()
       .in("id", toDelete);
