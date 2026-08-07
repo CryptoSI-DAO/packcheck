@@ -82,14 +82,25 @@ export default function EvaluatePage() {
     }, 2500);
 
     try {
-      const formData = new FormData();
+      // Step 1: Extract text client-side (browser-only — pdfjs needs DOM APIs)
+      const { extractTextFromFile } = await import("@/lib/extract");
+
+      const extractedChunks: string[] = [];
       for (const f of files) {
-        formData.append("files", f.file);
+        const text = await extractTextFromFile(f.file);
+        extractedChunks.push(`--- ${f.file.name} ---\n${text}`);
+      }
+      const combinedText = extractedChunks.join("\n\n");
+
+      if (!combinedText || combinedText.replace(/---.*---/g, "").trim().length < 50) {
+        throw new Error("Could not extract enough text from the uploaded files. The documents may be scanned images of poor quality.");
       }
 
+      // Step 2: Send extracted text to the API for AI analysis
       const res = await fetch("/api/analyze", {
         method: "POST",
-        body: formData,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: combinedText, fileCount: files.length }),
       });
 
       const data = await res.json();

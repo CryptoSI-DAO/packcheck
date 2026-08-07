@@ -1,4 +1,11 @@
-import type { NextRequest } from "next/server";
+'use client';
+
+import * as pdfjsLib from 'pdfjs-dist';
+
+// Set worker source — matches CaseLens approach (browser-side extraction)
+if (typeof window !== 'undefined') {
+  pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
+}
 
 export interface ExtractedFile {
   filename: string;
@@ -7,83 +14,48 @@ export interface ExtractedFile {
 }
 
 /**
- * Extract text from uploaded files (PDF + images with OCR)
+ * Extract text from a single file (PDF or image description).
+ * Runs entirely client-side — the server never receives raw PDFs.
  */
-export async function extractTextFromFiles(
-  files: File[]
-): Promise<{ text: string; fileCount: number }> {
-  const results: ExtractedFile[] = [];
+export async function extractTextFromFile(file: File): Promise<string> {
+  const fileType = file.type;
+  const fileName = file.name.toLowerCase();
 
-  for (const file of files) {
-    try {
-      if (file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf")) {
-        const text = await extractPdf(file);
-        results.push({ filename: file.name, text, pages: 0 });
-      } else if (file.type.startsWith("image/")) {
-        // For images, use vision model via OpenRouter
-        const text = await ocrImage(file);
-        results.push({ filename: file.name, text, pages: 1 });
-      }
-    } catch (err) {
-      console.error(`Failed to extract ${file.name}:`, err);
-      results.push({ filename: file.name, text: `[Unreadable: ${file.name}]`, pages: 0 });
-    }
+  if (fileType === 'application/pdf' || fileName.endsWith('.pdf')) {
+    return extractTextFromPdf(file);
+  } else if (
+    fileType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+    fileName.endsWith('.docx')
+  ) {
+    return extractTextFromDocx(file);
+  } else if (fileType === 'text/plain' || fileName.endsWith('.txt')) {
+    return file.text();
+  } else if (fileType.startsWith('image/')) {
+    // Images: return a placeholder — OCR happens server-side via vision model
+    return `[Image file: ${file.name}]`;
   }
 
-  const combined = results
-    .map((r) => `--- ${r.filename} ---\n${r.text}`)
-    .join("\n\n");
-
-  return { text: combined, fileCount: results.length };
+  throw new Error(`Unsupported file type: ${file.name}`);
 }
 
-async function extractPdf(file: File): Promise<string> {
+async function extractTextFromPdf(file: File): Promise<string> {
   const arrayBuffer = await file.arrayBuffer();
-  const buffer = Buffer.from(arrayBuffer);
+  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  let textContent = '';
 
-  // Dynamic import — pdf-parse's ESM types are broken, use require-style
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const pdfParse = require("pdf-parse");
-  const data = await pdfParse(buffer);
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const text = await page.getTextContent();
+    textContent += text.items.map((item: any) => ('str' in item ? item.str : '')).join(' ');
+    textContent += '\n\n';
+  }
 
-  return data.text || "[No text extracted from PDF]";
+  return textContent.trim();
 }
 
-async function ocrImage(file: File): Promise<string> {
-  // For V1, we send images to OpenRouter vision model
+async function extractTextFromDocx(file: File): Promise<string> {
+  const mammoth = await import('mammoth');
   const arrayBuffer = await file.arrayBuffer();
-  const base64 = Buffer.from(arrayBuffer).toString("base64");
-  const mimeType = file.type;
-
-  const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: "anthropic/claude-3.5-sonnet",
-      max_tokens: 4000,
-      messages: [
-        {
-          role: "user",
-          content: [
-            {
-              type: "text",
-              text: "Extract ALL text from this document image. Preserve the structure and formatting as best you can. Output only the extracted text, nothing else.",
-            },
-            {
-              type: "image_url",
-              image_url: {
-                url: `data:${mimeType};base64,${base64}`,
-              },
-            },
-          ],
-        },
-      ],
-    }),
-  });
-
-  const data = await response.json();
-  return data.choices?.[0]?.message?.content || "[OCR failed]";
+  const { value } = await mammoth.extractRawText({ arrayBuffer });
+  return value;
 }
