@@ -6,13 +6,15 @@ export default function LandingPage() {
       {/* Nav */}
       <nav className="flex items-center justify-between px-6 py-5 md:px-12">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-charcoal flex items-center justify-center">
-            <span className="text-brass font-serif text-xl font-bold">M</span>
-          </div>
-          <div>
-            <div className="font-serif text-lg text-charcoal leading-none">PackCheck</div>
-            <div className="text-[10px] tracking-widest uppercase text-charcoal/50">by Mulcare Property</div>
-          </div>
+          <a href="https://www.mulcareproperty.com" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-charcoal flex items-center justify-center">
+              <span className="text-brass font-serif text-xl font-bold">M</span>
+            </div>
+            <div>
+              <div className="font-serif text-lg text-charcoal leading-none">PackCheck</div>
+              <div className="text-[10px] tracking-widest uppercase text-charcoal/50">by Mulcare Property</div>
+            </div>
+          </a>
         </div>
         <Link
           href="/login"
@@ -179,9 +181,30 @@ export default function LandingPage() {
 
       {/* Footer */}
       <footer className="bg-warm-stone py-8 border-t border-charcoal/10">
-        <div className="max-w-6xl mx-auto px-6 md:px-12 flex flex-col sm:flex-row justify-between items-center gap-4">
-          <div className="text-sm text-charcoal/50">
-            © 2026 Mulcare Property. PackCheck is an AI tool and does not constitute legal advice.
+        <div className="max-w-6xl mx-auto px-6 md:px-12">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-4">
+            <div className="text-sm text-charcoal/50">
+              © 2026 Mulcare Property. PackCheck is an AI tool and does not constitute legal advice.
+            </div>
+            <a
+              href="https://www.mulcareproperty.com"
+              className="text-sm text-brass hover:text-brass-dark transition"
+            >
+              Mulcare Property →
+            </a>
+          </div>
+          <div className="flex justify-center">
+            <a
+              href="https://webarastudio.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 text-xs text-charcoal/40 hover:text-charcoal/60 transition"
+            >
+              <span>Built by</span>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/webara-logo.webp" alt="Webara Studio" className="h-5" />
+              <span>Webara Studio</span>
+            </a>
           </div>
         </div>
       </footer>
