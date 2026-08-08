@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Cormorant_Garamond, Source_Sans_3 } from "next/font/google";
 import "./globals.css";
 
@@ -18,6 +18,22 @@ export const metadata: Metadata = {
   title: "PackCheck — AI Property Pack Evaluator | Mulcare Property",
   description:
     "Upload your property pack and get an instant AI-powered evaluation. Know what you're buying before you sign.",
+  manifest: "/manifest.json",
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "PackCheck",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#1f2326",
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({
