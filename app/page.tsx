@@ -56,6 +56,33 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Explainer Video */}
+      <section className="bg-soft-mist py-16 md:py-24">
+        <div className="max-w-4xl mx-auto px-6 md:px-12">
+          <div className="text-center mb-8">
+            <div className="inline-block px-3 py-1 mb-4 text-xs tracking-widest uppercase text-brass border border-brass/30 rounded-full">
+              See it in action
+            </div>
+            <h2 className="font-serif text-3xl md:text-4xl text-charcoal mb-2">
+              How PackCheck works
+            </h2>
+            <p className="text-charcoal/50 text-sm">
+              Upload your pack, get a clear evaluation in 60 seconds
+            </p>
+          </div>
+          <div className="relative rounded-2xl overflow-hidden shadow-premium bg-charcoal">
+            <video
+              src="/packcheck-explainer.mp4"
+              controls
+              playsInline
+              preload="metadata"
+              className="w-full block"
+            >
+            </video>
+          </div>
+        </div>
+      </section>
+
       {/* How It Works */}
       <section id="how-it-works" className="bg-charcoal py-20">
         <div className="max-w-5xl mx-auto px-6 md:px-12">
