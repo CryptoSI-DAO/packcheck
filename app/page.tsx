@@ -25,33 +25,47 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero */}
-      <section className="px-6 md:px-12 pt-16 pb-24 max-w-6xl mx-auto">
-        <div className="text-center max-w-3xl mx-auto">
-          <div className="inline-block px-3 py-1 mb-6 text-xs tracking-widest uppercase text-brass border border-brass/30 rounded-full">
-            AI-Powered Property Pack Analysis
-          </div>
-          <h1 className="font-serif text-5xl md:text-6xl text-charcoal leading-tight mb-6">
-            Know what you&apos;re buying
-            <br />
-            <span className="text-brass">before you sign.</span>
-          </h1>
-          <p className="text-lg text-charcoal/70 mb-10 max-w-xl mx-auto">
-            Upload your property pack. Our AI reads every page and gives you 5 green flags,
-            5 red flags, and a plain-English summary — in under 60 seconds.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              href="/login"
-              className="px-8 py-4 bg-brass text-white font-medium rounded-lg hover:bg-brass-dark transition shadow-premium"
-            >
-              Get Started — 1 Free Evaluation
-            </Link>
-            <Link
-              href="#how-it-works"
-              className="px-8 py-4 text-charcoal font-medium rounded-lg border border-charcoal/15 hover:border-charcoal/30 transition"
-            >
-              How It Works
-            </Link>
+      <section className="relative overflow-hidden">
+        {/* Hero background image */}
+        <div className="absolute inset-0 z-0">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/packcheck-hero.png"
+            alt="Property pack documents with magnifying glass"
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-charcoal/80 via-charcoal/60 to-warm-stone" />
+        </div>
+
+        {/* Hero content */}
+        <div className="relative z-10 px-6 md:px-12 pt-24 pb-32 max-w-6xl mx-auto">
+          <div className="text-center max-w-3xl mx-auto">
+            <div className="inline-block px-3 py-1 mb-6 text-xs tracking-widest uppercase text-brass border border-brass/30 rounded-full">
+              AI-Powered Property Pack Analysis
+            </div>
+            <h1 className="font-serif text-5xl md:text-6xl text-white leading-tight mb-6 drop-shadow-lg">
+              Know what you&apos;re buying
+              <br />
+              <span className="text-brass">before you sign.</span>
+            </h1>
+            <p className="text-lg text-white/80 mb-10 max-w-xl mx-auto drop-shadow">
+              Upload your property pack. Our AI reads every page and gives you 5 green flags,
+              5 red flags, and a plain-English summary — in under 60 seconds.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link
+                href="/login"
+                className="px-8 py-4 bg-brass text-white font-medium rounded-lg hover:bg-brass-dark transition shadow-premium"
+              >
+                Get Started — 1 Free Evaluation
+              </Link>
+              <Link
+                href="#how-it-works"
+                className="px-8 py-4 text-white font-medium rounded-lg border border-white/30 hover:border-white/60 transition backdrop-blur-sm"
+              >
+                How It Works
+              </Link>
+            </div>
           </div>
         </div>
       </section>
