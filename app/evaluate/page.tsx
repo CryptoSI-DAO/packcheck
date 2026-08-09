@@ -169,7 +169,7 @@ export default function EvaluatePage() {
     <div className="min-h-screen bg-soft-mist">
       {/* Nav */}
       <nav className="bg-charcoal px-6 md:px-12 py-4 flex items-center justify-between">
-        <Link href="/dashboard" className="flex items-center gap-3">
+        <Link href="/" className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-lg bg-brass flex items-center justify-center">
             <span className="text-white font-serif text-lg font-bold">M</span>
           </div>

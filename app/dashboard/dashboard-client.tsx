@@ -70,7 +70,7 @@ export default function DashboardClient({
     <div className="min-h-screen bg-soft-mist">
       {/* Top Nav */}
       <nav className="bg-charcoal px-6 md:px-12 py-4 flex items-center justify-between">
-        <Link href="/dashboard" className="flex items-center gap-3">
+        <Link href="/" className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-lg bg-brass flex items-center justify-center">
             <span className="text-white font-serif text-lg font-bold">M</span>
           </div>
@@ -80,7 +80,9 @@ export default function DashboardClient({
           </div>
         </Link>
         <div className="flex items-center gap-4">
-          <span className="text-sm text-warm-stone/60 hidden sm:block">{user.email}</span>
+          <Link href="/dashboard" className="text-sm text-warm-stone/60 hover:text-warm-stone transition">
+            {user.email}
+          </Link>
           <button
             onClick={handleSignOut}
             className="text-sm text-warm-stone/70 hover:text-warm-stone transition"
