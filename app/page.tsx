@@ -70,19 +70,39 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Explainer Video */}
+      {/* Video Section */}
       <section className="bg-soft-mist py-16 md:py-24">
         <div className="max-w-4xl mx-auto px-6 md:px-12">
           <div className="text-center mb-8">
             <div className="inline-block px-3 py-1 mb-4 text-xs tracking-widest uppercase text-brass border border-brass/30 rounded-full">
-              See it in action
+              Full tutorial
             </div>
             <h2 className="font-serif text-3xl md:text-4xl text-charcoal mb-2">
-              How PackCheck works
+              See PackCheck in action
             </h2>
             <p className="text-charcoal/50 text-sm">
-              Upload your pack, get a clear evaluation in 60 seconds
+              Watch a complete walkthrough — from upload to full report
             </p>
+          </div>
+          <div className="relative rounded-2xl overflow-hidden shadow-premium bg-charcoal mb-8">
+            <div className="aspect-video">
+              <iframe
+                src="https://www.youtube.com/embed/5Lw4T-WmBeI"
+                title="PackCheck Tutorial — Do NOT skip this step when buying a property"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="w-full h-full"
+              />
+            </div>
+          </div>
+
+          <div className="text-center mb-8">
+            <div className="inline-block px-3 py-1 mb-4 text-xs tracking-widest uppercase text-brass border border-brass/30 rounded-full">
+              Quick overview
+            </div>
+            <h3 className="font-serif text-2xl md:text-3xl text-charcoal mb-2">
+              How it works in 30 seconds
+            </h3>
           </div>
           <div className="relative rounded-2xl overflow-hidden shadow-premium bg-charcoal">
             <video
