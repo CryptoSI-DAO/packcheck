@@ -1,6 +1,6 @@
 import Stripe from "stripe";
 
-function getStripe(): Stripe {
+export function getStripe(): Stripe {
   return new Stripe(process.env.STRIPE_SECRET_KEY!, {
     apiVersion: "2024-06-20" as Stripe.LatestApiVersion,
     typescript: true,
@@ -18,10 +18,19 @@ export type BundleId = keyof typeof CREDIT_BUNDLES;
 export async function createCheckoutSession(
   userId: string,
   bundleId: BundleId,
-  userEmail: string
+  userEmail: string,
+  applyDiscount = false
 ): Promise<string> {
   const stripe = getStripe();
   const bundle = CREDIT_BUNDLES[bundleId];
+
+  // 10% lifetime discount for referred users
+  const finalPrice = applyDiscount
+    ? Math.round(bundle.price * 0.9)
+    : bundle.price;
+  const displayPrice = applyDiscount
+    ? `£${(finalPrice / 100).toFixed(2)} (10% referral discount applied)`
+    : bundle.displayPrice;
 
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
@@ -31,10 +40,10 @@ export async function createCheckoutSession(
         quantity: 1,
         price_data: {
           currency: "gbp",
-          unit_amount: bundle.price,
+          unit_amount: finalPrice,
           product_data: {
             name: bundle.name,
-            description: `${bundle.credits} PackCheck evaluation credit${bundle.credits > 1 ? "s" : ""}`,
+            description: `${bundle.credits} PackCheck evaluation credit${bundle.credits > 1 ? "s" : ""}${applyDiscount ? " — 10% referral discount" : ""}`,
           },
         },
       },
@@ -46,6 +55,8 @@ export async function createCheckoutSession(
       user_id: userId,
       bundle_id: bundleId,
       credits: String(bundle.credits),
+      discounted: applyDiscount ? "true" : "false",
+      amount_paid: String(finalPrice),
     },
   });
 
@@ -55,7 +66,7 @@ export async function createCheckoutSession(
 export async function handleWebhookEvent(
   rawBody: string,
   signature: string
-): Promise<{ received: boolean; userId?: string; credits?: number }> {
+): Promise<{ received: boolean; userId?: string; credits?: number; stripeSessionId?: string }> {
   const stripe = getStripe();
   const event = stripe.webhooks.constructEvent(
     rawBody,
@@ -69,7 +80,12 @@ export async function handleWebhookEvent(
     const creditsStr = session.metadata?.credits;
 
     if (userId && creditsStr) {
-      return { received: true, userId, credits: parseInt(creditsStr, 10) };
+      return {
+        received: true,
+        userId,
+        credits: parseInt(creditsStr, 10),
+        stripeSessionId: session.id,
+      };
     }
   }
 

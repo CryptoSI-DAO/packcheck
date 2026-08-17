@@ -20,7 +20,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid bundle" }, { status: 400 });
     }
 
-    const url = await createCheckoutSession(user.id, bundleId, user.email!);
+    // Check if user has the referral lifetime discount (10% off)
+    const { data: profile } = await supabase
+      .from("evaluator_profiles")
+      .select("referral_discount")
+      .eq("user_id", user.id)
+      .single();
+
+    const applyDiscount = profile?.referral_discount === true;
+
+    const url = await createCheckoutSession(user.id, bundleId, user.email!, applyDiscount);
 
     return NextResponse.json({ url });
   } catch (error) {

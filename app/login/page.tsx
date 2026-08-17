@@ -11,11 +11,36 @@ function AuthForm() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [referralCode, setReferralCode] = useState("");
+  const [showRefField, setShowRefField] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirect = searchParams.get("redirect") || "/dashboard";
+  const urlRef = searchParams.get("ref") || "";
 
   const supabase = createClient();
+
+  // Apply referral code to the current user's profile
+  async function applyReferralCode(code: string) {
+    if (!code) return;
+    try {
+      const res = await fetch("/api/partners/attribute", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ referralCode: code }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setNotice(data.message);
+      } else if (res.status !== 409) {
+        // Don't show error if already attributed (409) — silently pass
+        setNotice(data.error || "Referral code could not be applied.");
+      }
+    } catch {
+      // Non-fatal — signup shouldn't fail because of referral issues
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -29,7 +54,13 @@ function AuthForm() {
           password,
         });
         if (error) throw error;
-        // After signup, session is usually created automatically
+        // Apply referral if from ?ref= link or manual entry
+        const code = urlRef || referralCode;
+        if (code) {
+          // Small delay to let the profile trigger create the profile row
+          await new Promise((r) => setTimeout(r, 1500));
+          await applyReferralCode(code);
+        }
         router.push(redirect);
       } else {
         const { error } = await supabase.auth.signInWithPassword({
@@ -37,6 +68,11 @@ function AuthForm() {
           password,
         });
         if (error) throw error;
+        // Apply referral on login too (user may have signed up before getting a code)
+        const code = urlRef || referralCode;
+        if (code) {
+          await applyReferralCode(code);
+        }
         router.push(redirect);
       }
     } catch (err: unknown) {
@@ -98,6 +134,45 @@ function AuthForm() {
             <div className="mb-4 p-3 bg-alert-red/10 border border-alert-red/20 rounded-lg text-sm text-alert-red">
               {error}
             </div>
+          )}
+
+          {notice && (
+            <div className="mb-4 p-3 bg-forest/10 border border-forest/20 rounded-lg text-sm text-forest">
+              {notice}
+            </div>
+          )}
+
+          {(urlRef || showRefField) && (
+            <div className="mb-4 p-3 bg-brass/5 border border-brass/20 rounded-lg">
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-xs font-semibold text-brass tracking-wide uppercase">
+                  Referral code — 10% off for life
+                </label>
+              </div>
+              <input
+                type="text"
+                value={urlRef || referralCode}
+                onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
+                disabled={!!urlRef}
+                className="w-full px-3 py-2 bg-white border border-brass/30 rounded-lg text-sm text-charcoal font-mono placeholder:text-charcoal/30 focus:outline-none focus:border-brass disabled:opacity-70"
+                placeholder="e.g. SMIT4A2B"
+              />
+              <p className="text-xs text-charcoal/40 mt-1">
+                {urlRef
+                  ? "Code from your referral link applied automatically."
+                  : "Enter a partner's code to get 10% off all credit purchases, permanently."}
+              </p>
+            </div>
+          )}
+
+          {!urlRef && !showRefField && (
+            <button
+              type="button"
+              onClick={() => setShowRefField(true)}
+              className="mb-4 text-xs text-brass hover:text-brass-dark transition font-medium"
+            >
+              + Have a referral code? Get 10% off for life
+            </button>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
