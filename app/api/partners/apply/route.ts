@@ -1,5 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase-server";
+import { createClient, SupabaseClient } from "@supabase/supabase-js";
+
+function getAdminClient(): SupabaseClient {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { persistSession: false } }
+  );
+}
 import { randomBytes } from "crypto";
 
 function generateReferralCode(name: string): string {
@@ -38,7 +46,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const supabase = await createClient();
+    const supabase = getAdminClient();
 
     // Check for existing application with this email
     const { data: existing } = await supabase
