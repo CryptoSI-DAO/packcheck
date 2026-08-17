@@ -1,5 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase-server";
+import { createClient as createAdminClient } from "@supabase/supabase-js";
+
+function getAdmin() {
+  return createAdminClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { persistSession: false } }
+  );
+}
 
 /**
  * Resolves a referral code (from ?ref= link or manual entry) to a partner,
@@ -27,8 +36,9 @@ export async function POST(request: NextRequest) {
     // Normalize
     const code = referralCode.trim().toUpperCase();
 
-    // Find the partner
-    const { data: partner } = await supabase
+    // Find the partner (service-role: referral codes are public identifiers)
+    const admin = getAdmin();
+    const { data: partner } = await admin
       .from("referral_partners")
       .select("id, status, referral_code")
       .eq("referral_code", code)
@@ -60,7 +70,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Partner can't refer themselves
-    const { data: partnerRecord } = await supabase
+    const { data: partnerRecord } = await admin
       .from("referral_partners")
       .select("auth_user_id")
       .eq("id", partner.id)
@@ -73,8 +83,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Attribute: set partner + lifetime discount
-    const { error } = await supabase
+    // Attribute: set partner + lifetime discount (server-side, immutable)
+    const { error } = await admin
       .from("evaluator_profiles")
       .update({
         referred_by_partner_id: partner.id,
@@ -85,7 +95,7 @@ export async function POST(request: NextRequest) {
     if (error) throw error;
 
     // Audit
-    await supabase.from("referral_audit_log").insert({
+    await admin.from("referral_audit_log").insert({
       actor: user.email || "unknown",
       entity_type: "evaluator_profiles",
       entity_id: user.id,
