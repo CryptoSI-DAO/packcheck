@@ -8,9 +8,9 @@ export function getStripe(): Stripe {
 }
 
 export const CREDIT_BUNDLES = {
-  "eval-1": { credits: 1, name: "1 Evaluation", price: 150, displayPrice: "£1.50" },
-  "eval-5": { credits: 5, name: "5 Evaluations", price: 600, displayPrice: "£6.00" },
-  "eval-10": { credits: 10, name: "10 Evaluations", price: 1000, displayPrice: "£10.00" },
+  "eval-1": { credits: 1, name: "1 Evaluation", price: 150, displayPrice: "£1.50", stripePriceId: "price_1U5grDBBSjIVqnyYl7WRXm8k" },
+  "eval-5": { credits: 5, name: "5 Evaluations", price: 600, displayPrice: "£6.00", stripePriceId: "price_1U5grDBBSjIVqnyYC44CklIF" },
+  "eval-10": { credits: 10, name: "10 Evaluations", price: 1000, displayPrice: "£10.00", stripePriceId: "price_1U5grDBBSjIVqnyYiVKr1Zny" },
 } as const;
 
 export type BundleId = keyof typeof CREDIT_BUNDLES;
@@ -24,30 +24,18 @@ export async function createCheckoutSession(
   const stripe = getStripe();
   const bundle = CREDIT_BUNDLES[bundleId];
 
-  // 10% lifetime discount for referred users
-  const finalPrice = applyDiscount
-    ? Math.round(bundle.price * 0.9)
-    : bundle.price;
-  const displayPrice = applyDiscount
-    ? `£${(finalPrice / 100).toFixed(2)} (10% referral discount applied)`
-    : bundle.displayPrice;
-
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
     customer_email: userEmail,
     line_items: [
       {
         quantity: 1,
-        price_data: {
-          currency: "gbp",
-          unit_amount: finalPrice,
-          product_data: {
-            name: bundle.name,
-            description: `${bundle.credits} PackCheck evaluation credit${bundle.credits > 1 ? "s" : ""}${applyDiscount ? " — 10% referral discount" : ""}`,
-          },
-        },
+        price: bundle.stripePriceId,
       },
     ],
+    ...(applyDiscount
+      ? { discounts: [{ coupon: process.env.STRIPE_REFERRAL_COUPON_ID! }] }
+      : {}),
     client_reference_id: `${userId}:${bundleId}`,
     success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?credits=purchased`,
     cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?credits=cancelled`,
@@ -56,7 +44,7 @@ export async function createCheckoutSession(
       bundle_id: bundleId,
       credits: String(bundle.credits),
       discounted: applyDiscount ? "true" : "false",
-      amount_paid: String(finalPrice),
+      amount_paid: String(applyDiscount ? Math.round(bundle.price * 0.9) : bundle.price),
     },
   });
 
