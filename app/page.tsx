@@ -240,6 +240,99 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Earn with PackCheck — Partner Programme */}
+      <section id="partners" className="py-20 bg-soft-mist">
+        <div className="max-w-4xl mx-auto px-6 md:px-12">
+          <div className="text-center mb-12">
+            <div className="inline-block px-3 py-1 mb-4 text-xs tracking-widest uppercase text-brass border border-brass/30 rounded-full">
+              Partner Programme
+            </div>
+            <h2 className="font-serif text-3xl md:text-4xl text-charcoal mb-3">
+              Earn 20% commission for life
+            </h2>
+            <p className="text-charcoal/60 max-w-xl mx-auto">
+              Agents, solicitors, brokers — refer your clients to PackCheck and
+              earn 20% of every credit purchase they make, forever. They get 10%
+              off. You both win.
+            </p>
+          </div>
+
+          <div className="grid sm:grid-cols-3 gap-4 mb-10">
+            <div className="bg-white rounded-2xl p-6 shadow-premium text-center">
+              <div className="text-3xl mb-3">🔗</div>
+              <h3 className="font-serif text-lg text-charcoal mb-2">Share your link</h3>
+              <p className="text-sm text-charcoal/50 leading-relaxed">
+                Get a personal referral link after approval. Drop it in emails,
+                signatures, or your client welcome pack.
+              </p>
+            </div>
+            <div className="bg-white rounded-2xl p-6 shadow-premium text-center">
+              <div className="text-3xl mb-3">🎁</div>
+              <h3 className="font-serif text-lg text-charcoal mb-2">They save 10%</h3>
+              <p className="text-sm text-charcoal/50 leading-relaxed">
+                Your clients get 10% off every credit purchase, for life. A
+                genuine reason to use your link.
+              </p>
+            </div>
+            <div className="bg-white rounded-2xl p-6 shadow-premium text-center">
+              <div className="text-3xl mb-3">💰</div>
+              <h3 className="font-serif text-lg text-charcoal mb-2">You earn 20%</h3>
+              <p className="text-sm text-charcoal/50 leading-relaxed">
+                Every purchase by a referred client earns you 20% commission —
+                tracked automatically, paid by bank transfer.
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-2xl shadow-premium p-6 md:p-8">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <div className="flex-1">
+                <h3 className="font-serif text-xl text-charcoal mb-2">
+                  Who it&apos;s for
+                </h3>
+                <p className="text-sm text-charcoal/60 leading-relaxed mb-4">
+                  Estate agents, conveyancing solicitors, mortgage brokers,
+                  property investors, landlords — anyone whose clients buy
+                  property. If you advise property buyers, this is for you.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {["Estate Agents", "Solicitors", "Brokers", "Investors", "Landlords", "Creators"].map((t) => (
+                    <span
+                      key={t}
+                      className="px-3 py-1 bg-soft-mist rounded-full text-xs text-charcoal/60"
+                    >
+                      {t}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              <div className="text-center md:text-left flex-shrink-0">
+                <Link
+                  href="/partners/apply"
+                  className="inline-block px-8 py-4 bg-brass text-white font-medium rounded-lg hover:bg-brass-dark transition shadow-premium"
+                >
+                  Apply to Become a Partner
+                </Link>
+                <p className="text-xs text-charcoal/40 mt-3">
+                  Free to join · Reviewed within 3 working days
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-8 bg-warm-stone rounded-xl p-5 text-center">
+            <p className="text-sm text-charcoal/60">
+              <strong className="text-charcoal">Have a referral code?</strong>{" "}
+              Enter it when you{" "}
+              <Link href="/login" className="text-brass hover:text-brass-dark transition font-medium">
+                sign up
+              </Link>{" "}
+              and get 10% off all credit purchases — permanently.
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* Footer */}
       <footer className="bg-warm-stone py-8 border-t border-charcoal/10">
         <div className="max-w-6xl mx-auto px-6 md:px-12">
