@@ -36,8 +36,10 @@ export default function AdminPartnersClient({ applications, commissionSummary }:
   const router = useRouter();
   const [filter, setFilter] = useState<string>("all");
   const [reviewing, setReviewing] = useState<string | null>(null);
+  const [payoutBusy, setPayoutBusy] = useState<string | null>(null);
   const [note, setNote] = useState("");
   const [result, setResult] = useState<string | null>(null);
+  const [errorResult, setErrorResult] = useState<string | null>(null);
 
   const filtered = applications.filter((a) =>
     filter === "all" ? true : a.status === filter
@@ -65,6 +67,33 @@ export default function AdminPartnersClient({ applications, commissionSummary }:
       setResult("Something went wrong");
     } finally {
       setReviewing(null);
+    }
+  }
+
+  async function handlePayout(partnerId: string) {
+    const ref = window.prompt(
+      "Bank reference for this payout (optional, stored in the audit log):"
+    );
+    if (ref === null) return;
+    setPayoutBusy(partnerId);
+    setErrorResult(null);
+    try {
+      const res = await fetch("/api/partners/payout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ partnerId, bankReference: ref || undefined }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setResult(data.message);
+        router.refresh();
+      } else {
+        setErrorResult(data.error || "Payout failed");
+      }
+    } catch {
+      setErrorResult("Something went wrong");
+    } finally {
+      setPayoutBusy(null);
     }
   }
 
@@ -99,6 +128,12 @@ export default function AdminPartnersClient({ applications, commissionSummary }:
         {result && (
           <div className="mb-6 p-4 bg-forest/10 border border-forest/20 rounded-lg text-sm text-forest">
             {result}
+          </div>
+        )}
+
+        {errorResult && (
+          <div className="mb-6 p-4 bg-alert-red/10 border border-alert-red/20 rounded-lg text-sm text-alert-red">
+            {errorResult}
           </div>
         )}
 
@@ -172,6 +207,17 @@ export default function AdminPartnersClient({ applications, commissionSummary }:
                         Commission: £{(commissions.total / 100).toFixed(2)} total · £
                         {(commissions.pending / 100).toFixed(2)} pending · £
                         {(commissions.paid / 100).toFixed(2)} paid
+                        {app.status === "approved" && app.onboarding_completed && commissions.pending > 0 && (
+                          <button
+                            onClick={() => handlePayout(app.id)}
+                            disabled={payoutBusy === app.id}
+                            className="ml-3 px-3 py-1 bg-forest text-white rounded-md text-[11px] font-semibold hover:opacity-90 transition disabled:opacity-50"
+                          >
+                            {payoutBusy === app.id
+                              ? "Recording…"
+                              : `Pay out £${(commissions.pending / 100).toFixed(2)}`}
+                          </button>
+                        )}
                       </p>
                     )}
                   </div>

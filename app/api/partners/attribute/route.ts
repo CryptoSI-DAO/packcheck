@@ -69,14 +69,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Partner can't refer themselves
+    // Partner can't refer themselves — checks both linked auth user and email
+    // (auth_user_id is only set after the partner's first portal login, so the
+    // email match closes the window where a partner signs up with their own code)
     const { data: partnerRecord } = await admin
       .from("referral_partners")
-      .select("auth_user_id")
+      .select("auth_user_id, email")
       .eq("id", partner.id)
       .single();
 
-    if (partnerRecord?.auth_user_id === user.id) {
+    if (
+      partnerRecord?.auth_user_id === user.id ||
+      (user.email && partnerRecord?.email === user.email.toLowerCase())
+    ) {
       return NextResponse.json(
         { error: "You cannot use your own referral code." },
         { status: 400 }
