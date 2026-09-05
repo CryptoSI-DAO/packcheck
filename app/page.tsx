@@ -16,12 +16,20 @@ export default function LandingPage() {
             </div>
           </a>
         </div>
-        <Link
-          href="/login"
-          className="px-5 py-2 text-sm font-medium text-warm-stone bg-charcoal rounded-lg hover:bg-charcoal-light transition"
-        >
-          Sign In
-        </Link>
+        <div className="flex items-center gap-4">
+          <Link
+            href="#partners"
+            className="hidden sm:inline-block px-5 py-2 text-sm font-medium text-brass border border-brass/40 rounded-lg hover:bg-brass hover:text-white transition"
+          >
+            Earn 20% — Partners
+          </Link>
+          <Link
+            href="/login"
+            className="px-5 py-2 text-sm font-medium text-warm-stone bg-charcoal rounded-lg hover:bg-charcoal-light transition"
+          >
+            Sign In
+          </Link>
+        </div>
       </nav>
 
       {/* Hero */}
@@ -340,12 +348,17 @@ export default function LandingPage() {
             <div className="text-sm text-charcoal/50">
               © 2026 Mulcare Property. PackCheck is an AI tool and does not constitute legal advice.
             </div>
-            <a
-              href="https://www.mulcareproperty.com"
-              className="text-sm text-brass hover:text-brass-dark transition"
-            >
-              Mulcare Property →
-            </a>
+            <div className="flex items-center gap-5">
+              <Link href="/partners" className="text-sm text-brass hover:text-brass-dark transition">
+                Partner Programme
+              </Link>
+              <a
+                href="https://www.mulcareproperty.com"
+                className="text-sm text-brass hover:text-brass-dark transition"
+              >
+                Mulcare Property →
+              </a>
+            </div>
           </div>
           <div className="flex justify-center">
             <a
